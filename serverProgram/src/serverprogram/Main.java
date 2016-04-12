@@ -49,6 +49,7 @@ public class Main {
 
                             server.sendToTCP(connection.getID(), p1_5);
                             
+                            
                             Packet2ClientConnected p2 = new Packet2ClientConnected();
                             p2.clientName = p1.username;
                             server.sendToAllExceptTCP(connection.getID(), p2);
