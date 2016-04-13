@@ -8,16 +8,14 @@ package serverprogram;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
-import com.sun.java.accessibility.util.AWTEventMonitor;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.AbstractAction;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -30,7 +28,6 @@ import packets.Packet2ClientConnected;
 import packets.Packet3ClientDisconnect;
 import packets.Packet4Chat;
 import packets.Packet5ListUsers;
-import static serverprogram.Main.tcp;
 
 /**
  *
@@ -48,6 +45,9 @@ public class Main_console extends JFrame {
     public static HashMap<Integer, Connection> clients = new HashMap<Integer, Connection>();
     public static HashMap<Integer, String> clients_name = new HashMap<Integer, String>();
 
+    private static ArrayList<Integer> banIDS = new ArrayList<>();
+    private static ArrayList<String> banIPS = new ArrayList<>();
+
     public Main_console() {
         super();
 
@@ -59,7 +59,8 @@ public class Main_console extends JFrame {
         getContentPane().add(new JScrollPane(tableau), BorderLayout.CENTER);
 
         JPanel boutons = new JPanel();
-        boutons.add(new JButton(new RemoveAction()));
+        boutons.add(new JButton(new BanidAction()));
+        boutons.add(new JButton(new BanipAction()));
 
         getContentPane().add(boutons, BorderLayout.SOUTH);
 
@@ -86,17 +87,56 @@ public class Main_console extends JFrame {
 
     }
 
-    private class RemoveAction extends AbstractAction {
+    private class BanidAction extends AbstractAction {
 
-        public RemoveAction() {
-            super("Supprimer");
+        public BanidAction() {
+            super("Ban");
         }
 
         @Override
         public void actionPerformed(ActionEvent ae) {
             int[] selection = tableau.getSelectedRows();
             for (int i = selection.length - 1; i >= 0; i--) {
-                modele.removeUser(selection[i]);
+                int tempBan = -1;
+                for (int j = 0; j < banIDS.size(); j++) {
+                    if (banIDS.get(i) == (int) modele.getValueAt(i, 0)) {
+                        modele.setValueAt(false, i, 3);
+                        tempBan = j;
+                    }
+                }
+                if (tempBan != -1) {
+                    banIDS.remove(tempBan);
+                } else {
+                    banIDS.add((int) modele.getValueAt(i, 0));
+                    modele.setValueAt(true, i, 3);
+                }
+            }
+        }
+    }
+
+    private class BanipAction extends AbstractAction {
+
+        public BanipAction() {
+            super("BanIP");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            int[] selection = tableau.getSelectedRows();
+            for (int i = selection.length - 1; i >= 0; i--) {
+                int tempBan = -1;
+                for (int j = 0; j < banIPS.size(); j++) {
+                    if (banIPS.get(i).equals((String) modele.getValueAt(i, 4))) {
+                        modele.setValueAt(false, i, 4);
+                        tempBan = j;
+                    }
+                }
+                if (tempBan != -1) {
+                    banIDS.remove(tempBan);
+                } else {
+                    banIPS.add((String) modele.getValueAt(i, 4));
+                    modele.setValueAt(true, i, 4);
+                }
             }
         }
     }
@@ -112,8 +152,12 @@ public class Main_console extends JFrame {
                         Packet1Connect p1 = (Packet1Connect) object;
                         clients.put(connection.getID(), connection);
                         clients_name.put(connection.getID(), p1.username);
-                        modele.addUser(new Users(p1.username,connection.getID(),connection.getRemoteAddressTCP().getAddress().getHostAddress()));
-                        
+                        modele.addUser(new Users(p1.username,
+                                connection.getID(),
+                                connection.getRemoteAddressTCP().getAddress().getHostAddress(),
+                                false,
+                                false));
+
                         Packet1_5ConnectConfirm p1_5 = new Packet1_5ConnectConfirm();
                         p1_5.ID = connection.getID();
 
@@ -132,11 +176,13 @@ public class Main_console extends JFrame {
                     } else if (object instanceof Packet3ClientDisconnect) {
                         Packet3ClientDisconnect p3 = (Packet3ClientDisconnect) object;
                         clients.remove(p3.ClientName);
-                        
+
                         server.sendToAllExceptTCP(clients.get(p3.ClientName).getID(), p3);
                     } else if (object instanceof Packet4Chat) {
                         Packet4Chat p4 = (Packet4Chat) object;
-                        server.sendToAllTCP(p4);
+                        if (!banIDS.contains(p4.ID) && !banIPS.contains(connection.getRemoteAddressTCP().getAddress().getHostAddress())) {
+                            server.sendToAllTCP(p4);
+                        }
                     }
                 } else {
 //                        Packet6Error p6 = new Packet6Error();
@@ -165,8 +211,8 @@ public class Main_console extends JFrame {
                 p3.ClientName = clients_name.get(user_id);
                 clients.remove(user_id);
                 clients_name.remove(user_id);
-                for(int i=0;i<modele.getRowCount();i++){
-                    if(user_id==(int)modele.getValueAt(i,0)){
+                for (int i = 0; i < modele.getRowCount(); i++) {
+                    if (user_id == (int) modele.getValueAt(i, 0)) {
                         modele.removeUser(i);
                     }
                 }

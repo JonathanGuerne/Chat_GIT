@@ -14,7 +14,7 @@ import javax.swing.table.AbstractTableModel;
  */
 public class ModelDynamique extends AbstractTableModel {
 
-    private final String[] entetes = {"ID", "Nom", "IP"};
+    private final String[] entetes = {"ID", "Nom", "IP", "Ban_ID", "Ban_IP"};
     private final ArrayList<Users> list_users = new ArrayList<Users>();
 
     public ModelDynamique() {
@@ -45,17 +45,43 @@ public class ModelDynamique extends AbstractTableModel {
                 return list_users.get(rowindex).getName();
             case 2:
                 return list_users.get(rowindex).getAdresseIP();
+            case 3:
+                return list_users.get(rowindex).isBan_id();
+            case 4:
+                return list_users.get(rowindex).isBan_ip();
             default:
                 return null;
         }
     }
-    
-    public void addUser(Users u){
-        list_users.add(u);
-        fireTableRowsInserted(list_users.size()-1,list_users.size()-1);
+
+    @Override
+    public void setValueAt(Object o, int rowindex, int columIndex) {
+        switch (columIndex) {
+            case 0:
+                list_users.get(rowindex).setID((int)o);
+                break;
+            case 1:
+                list_users.get(rowindex).setName((String)o);
+                break;
+            case 2:
+                list_users.get(rowindex).setAdresseIP((String)o);
+                break;
+            case 3:
+                list_users.get(rowindex).setBan_id((boolean)o);
+                break;
+            case 4:
+                list_users.get(rowindex).setBan_ip((boolean)o);
+                break;
+        }
+        fireTableRowsUpdated(rowindex, rowindex);
     }
-    
-    public void removeUser(int rowIndex){
+
+    public void addUser(Users u) {
+        list_users.add(u);
+        fireTableRowsInserted(list_users.size() - 1, list_users.size() - 1);
+    }
+
+    public void removeUser(int rowIndex) {
         list_users.remove(rowIndex);
         fireTableRowsDeleted(rowIndex, rowIndex);
     }
