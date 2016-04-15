@@ -6,5 +6,5 @@ package serverprogram;
  */
 public class ConstNET {
 
-    static public int majMinClient=2;
+    static public int majMinClient=3;
 }

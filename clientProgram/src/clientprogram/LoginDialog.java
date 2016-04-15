@@ -104,6 +104,7 @@ public class LoginDialog extends javax.swing.JDialog {
         }
         else{
             JOptionPane.showMessageDialog(this,"le pseudo utilisé est invalide","Erreur",JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 

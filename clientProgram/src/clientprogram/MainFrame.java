@@ -27,7 +27,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     int tcp = 23900, udp = 23901;
     final Client client;
-    final private int majClient = 2;
+    final private int majClient = 3;
     int ID;
     String username;
     DefaultStyledDocument doc;
@@ -74,6 +74,7 @@ public class MainFrame extends javax.swing.JFrame {
         client.getKryo().register(Packet3ClientDisconnect.class);
         client.getKryo().register(Packet4Chat.class);
         client.getKryo().register(Packet5ListUsers.class);
+        client.getKryo().register(Packet6Error.class);
         client.getKryo().register(java.util.ArrayList.class);
 
         client.addListener(new Listener() {
@@ -141,6 +142,7 @@ public class MainFrame extends javax.swing.JFrame {
                     } else if (object instanceof Packet6Error) {
                         Packet6Error p6 = (Packet6Error) object;
                         JOptionPane.showMessageDialog(null, p6.erreorMessage, "Erreur", JOptionPane.ERROR_MESSAGE);
+                        System.exit(0);
                     }
                 }
             }

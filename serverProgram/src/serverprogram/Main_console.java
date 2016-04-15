@@ -18,6 +18,7 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -28,6 +29,7 @@ import packets.Packet2ClientConnected;
 import packets.Packet3ClientDisconnect;
 import packets.Packet4Chat;
 import packets.Packet5ListUsers;
+import packets.Packet6Error;
 
 /**
  *
@@ -47,6 +49,8 @@ public class Main_console extends JFrame {
 
     private static ArrayList<Integer> banIDS = new ArrayList<>();
     private static ArrayList<String> banIPS = new ArrayList<>();
+    
+    private static JLabel IPadresseLBL=new JLabel();
 
     public Main_console() {
         super();
@@ -61,6 +65,8 @@ public class Main_console extends JFrame {
         JPanel boutons = new JPanel();
         boutons.add(new JButton(new BanidAction()));
         boutons.add(new JButton(new BanipAction()));
+        
+        boutons.add(IPadresseLBL);
 
         getContentPane().add(boutons, BorderLayout.SOUTH);
 
@@ -73,7 +79,7 @@ public class Main_console extends JFrame {
         server = new Server();
         server.start();
         server.bind(tcp, udp);
-
+        
         server.addListener(new ServerListener());
 
         server.getKryo().register(Packet.class);
@@ -83,8 +89,8 @@ public class Main_console extends JFrame {
         server.getKryo().register(Packet3ClientDisconnect.class);
         server.getKryo().register(Packet4Chat.class);
         server.getKryo().register(Packet5ListUsers.class);
+        server.getKryo().register(Packet6Error.class);
         server.getKryo().register(java.util.ArrayList.class);
-
     }
 
     private class BanidAction extends AbstractAction {
@@ -96,19 +102,20 @@ public class Main_console extends JFrame {
         @Override
         public void actionPerformed(ActionEvent ae) {
             int[] selection = tableau.getSelectedRows();
+            System.out.println(selection.toString());
             for (int i = selection.length - 1; i >= 0; i--) {
                 int tempBan = -1;
                 for (int j = 0; j < banIDS.size(); j++) {
-                    if (banIDS.get(i) == (int) modele.getValueAt(i, 0)) {
-                        modele.setValueAt(false, i, 3);
+                    if (banIDS.get(j) == (int) modele.getValueAt(selection[i], 0)) {
+                        modele.setValueAt(false, selection[i], 3);
                         tempBan = j;
                     }
                 }
                 if (tempBan != -1) {
                     banIDS.remove(tempBan);
                 } else {
-                    banIDS.add((int) modele.getValueAt(i, 0));
-                    modele.setValueAt(true, i, 3);
+                    banIDS.add((int) modele.getValueAt(selection[i], 0));
+                    modele.setValueAt(true, selection[i], 3);
                 }
             }
         }
@@ -126,16 +133,16 @@ public class Main_console extends JFrame {
             for (int i = selection.length - 1; i >= 0; i--) {
                 int tempBan = -1;
                 for (int j = 0; j < banIPS.size(); j++) {
-                    if (banIPS.get(i).equals((String) modele.getValueAt(i, 4))) {
-                        modele.setValueAt(false, i, 4);
+                    if (banIPS.get(j).equals((String) modele.getValueAt(selection[i], 2))) {
+                        modele.setValueAt(false, selection[i], 4);
                         tempBan = j;
                     }
                 }
                 if (tempBan != -1) {
-                    banIDS.remove(tempBan);
+                    banIPS.remove(tempBan);
                 } else {
-                    banIPS.add((String) modele.getValueAt(i, 4));
-                    modele.setValueAt(true, i, 4);
+                    banIPS.add((String) modele.getValueAt(selection[i], 2));
+                    modele.setValueAt(true, selection[i], 4);
                 }
             }
         }
@@ -185,9 +192,9 @@ public class Main_console extends JFrame {
                         }
                     }
                 } else {
-//                        Packet6Error p6 = new Packet6Error();
-//                        p6.erreorMessage = "Mauvaise mise à jour";
-//                        server.sendToTCP(connection.getID(), p6);
+                    Packet6Error p6 = new Packet6Error();
+                    p6.erreorMessage = "Mauvaise mise à jour";
+                    server.sendToTCP(connection.getID(), p6);
                 }
             }
         }
