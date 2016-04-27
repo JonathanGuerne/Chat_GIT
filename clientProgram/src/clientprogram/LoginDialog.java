@@ -12,10 +12,11 @@ public class LoginDialog extends javax.swing.JDialog {
     public String userName;
     public String adressIP;
 
-    public LoginDialog(java.awt.Frame parent, boolean modal) {
+    public LoginDialog(java.awt.Frame parent, boolean modal,String adresse) {
         super(parent, modal);
         initComponents();
         jTextField1.setText(System.getProperty("user.name"));
+        jTextAdresse.setText(adresse);
     }
 
     @SuppressWarnings("unchecked")
@@ -138,7 +139,7 @@ public class LoginDialog extends javax.swing.JDialog {
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                LoginDialog dialog = new LoginDialog(new javax.swing.JFrame(), true);
+                LoginDialog dialog = new LoginDialog(new javax.swing.JFrame(), true,"");
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

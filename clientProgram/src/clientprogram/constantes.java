@@ -16,6 +16,7 @@ public class constantes {
     Style mainText;
     Style deco;
     Style co;
+    Style srvMsg;
     Style perso;
     public constantes(StyleContext sc){
         this.sc = sc;
@@ -32,6 +33,10 @@ public class constantes {
             
             co = sc.addStyle("co", mainText);
             StyleConstants.setForeground(co, Color.green);
+            
+            srvMsg = sc.addStyle("srvMsg", mainText);
+            StyleConstants.setForeground(srvMsg, Color.blue);
+            StyleConstants.setAlignment(srvMsg,StyleConstants.ALIGN_CENTER);
             
             perso = sc.addStyle("perso",mainText);
             StyleConstants.setAlignment(perso,StyleConstants.ALIGN_RIGHT);
@@ -65,6 +70,11 @@ public class constantes {
     public Style getPerso() {
         return perso;
     }
+
+    public Style getSrvMsg() {
+        return srvMsg;
+    }
+    
     
     
 }

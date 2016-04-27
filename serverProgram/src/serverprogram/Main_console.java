@@ -22,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import packets.Packet;
 import packets.Packet1Connect;
 import packets.Packet1_5ConnectConfirm;
@@ -30,6 +31,7 @@ import packets.Packet3ClientDisconnect;
 import packets.Packet4Chat;
 import packets.Packet5ListUsers;
 import packets.Packet6Error;
+import packets.Packet7ServerMessage;
 
 /**
  *
@@ -49,9 +51,8 @@ public class Main_console extends JFrame {
 
     private static ArrayList<Integer> banIDS = new ArrayList<>();
     private static ArrayList<String> banIPS = new ArrayList<>();
-    
-    private static JLabel IPadresseLBL=new JLabel();
 
+    private static JTextField msgServerField = new JTextField("",20);
     public Main_console() {
         super();
 
@@ -65,9 +66,9 @@ public class Main_console extends JFrame {
         JPanel boutons = new JPanel();
         boutons.add(new JButton(new BanidAction()));
         boutons.add(new JButton(new BanipAction()));
+        boutons.add(new JButton(new SendButton()));
+        boutons.add(msgServerField);
         
-        boutons.add(IPadresseLBL);
-
         getContentPane().add(boutons, BorderLayout.SOUTH);
 
         pack();
@@ -79,7 +80,7 @@ public class Main_console extends JFrame {
         server = new Server();
         server.start();
         server.bind(tcp, udp);
-        
+
         server.addListener(new ServerListener());
 
         server.getKryo().register(Packet.class);
@@ -90,7 +91,25 @@ public class Main_console extends JFrame {
         server.getKryo().register(Packet4Chat.class);
         server.getKryo().register(Packet5ListUsers.class);
         server.getKryo().register(Packet6Error.class);
+        server.getKryo().register(Packet7ServerMessage.class);
         server.getKryo().register(java.util.ArrayList.class);
+    }
+
+    private class SendButton extends AbstractAction {
+
+        public SendButton() {
+            super("Send");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            Packet7ServerMessage p7 = new Packet7ServerMessage();
+            p7.msg = msgServerField.getText();
+            msgServerField.setText("");
+            System.out.println(p7.msg);
+            server.sendToAllTCP(p7);
+        }
+
     }
 
     private class BanidAction extends AbstractAction {
@@ -189,6 +208,11 @@ public class Main_console extends JFrame {
                         Packet4Chat p4 = (Packet4Chat) object;
                         if (!banIDS.contains(p4.ID) && !banIPS.contains(connection.getRemoteAddressTCP().getAddress().getHostAddress())) {
                             server.sendToAllTCP(p4);
+                            if(p4.message.contains("bug")){
+                                Packet7ServerMessage p7 = new Packet7ServerMessage();
+                                p7.msg=("https://github.com/JonathanGuerne/Chat_GIT");
+                                server.sendToAllTCP(p7);
+                            }
                         }
                     }
                 } else {

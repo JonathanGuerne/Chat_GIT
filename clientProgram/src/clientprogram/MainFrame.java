@@ -19,6 +19,7 @@ import packets.Packet3ClientDisconnect;
 import packets.Packet4Chat;
 import packets.Packet5ListUsers;
 import packets.Packet6Error;
+import packets.Packet7ServerMessage;
 
 /**
  * @author Jonathan
@@ -35,22 +36,24 @@ public class MainFrame extends javax.swing.JFrame {
     constantes cons;
 
     public MainFrame() {
-
         client = new Client();
         client.start();
 
+        InetAddress address = client.discoverHost(23901, 5000);
+        System.out.println(address);
+
         LoginDialog dial;
         do {
-            dial = new LoginDialog(null, true);
+            dial = new LoginDialog(null, true, (address != null) ? address.getHostAddress() : "");
             dial.setVisible(true);
         } while (dial.userName == null);
-        
+
         username = dial.userName;
 
         InetAddress adresse = client.discoverHost(udp, 1000);
-        
+
         try {
-            client.connect(1000,dial.adressIP, tcp, udp);
+            client.connect(1000, dial.adressIP, tcp, udp);
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(null, "Impossible de se connecter au serveur.");
             System.exit(0);
@@ -75,6 +78,7 @@ public class MainFrame extends javax.swing.JFrame {
         client.getKryo().register(Packet4Chat.class);
         client.getKryo().register(Packet5ListUsers.class);
         client.getKryo().register(Packet6Error.class);
+        client.getKryo().register(Packet7ServerMessage.class);
         client.getKryo().register(java.util.ArrayList.class);
 
         client.addListener(new Listener() {
@@ -143,6 +147,21 @@ public class MainFrame extends javax.swing.JFrame {
                         Packet6Error p6 = (Packet6Error) object;
                         JOptionPane.showMessageDialog(null, p6.erreorMessage, "Erreur", JOptionPane.ERROR_MESSAGE);
                         System.exit(0);
+                    } else if (object instanceof Packet7ServerMessage) {
+                        
+                        System.out.println("here");
+                        
+                        try {
+                            Packet7ServerMessage p7 = (Packet7ServerMessage) object;
+                            
+                            doc.setLogicalStyle(doc.getLength(), cons.getSrvMsg());
+                            doc.insertString(doc.getLength(), ""+p7.msg+"\n", null);
+                            doc.setLogicalStyle(doc.getLength(), cons.getMainText());
+                            content.select(doc.getLength(), doc.getLength());
+                        } catch (BadLocationException ex) {
+                            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
                     }
                 }
             }
@@ -225,10 +244,10 @@ public class MainFrame extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addGap(125, 125, 125)
-                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE))
                     .addComponent(nameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(textField, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
+                        .addComponent(textField)
                         .addGap(18, 18, 18)
                         .addComponent(submitButton))
                     .addComponent(jScrollPane1))
@@ -285,7 +304,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try {
-            doc.remove(0, doc.getLength()-1);
+            doc.remove(0, doc.getLength() - 1);
         } catch (BadLocationException ex) {
             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
