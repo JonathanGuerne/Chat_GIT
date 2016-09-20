@@ -11,10 +11,14 @@ import com.esotericsoftware.kryonet.Server;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -70,6 +74,12 @@ public class Main_console extends JFrame {
         boutons.add(msgServerField);
         
         getContentPane().add(boutons, BorderLayout.SOUTH);
+        
+        try {
+            getContentPane().add(new JLabel(InetAddress.getLocalHost().getHostAddress()),BorderLayout.NORTH);
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(Main_console.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         pack();
     }
