@@ -85,7 +85,10 @@ public class Main_console extends JFrame {
     }
 
     public static void main(String[] args) throws IOException {
-        new Main_console().setVisible(true);
+        
+        
+        if(!(args.length>=1 && ( "0".equals(args[0])||"false".equals(args[0]))))
+            new Main_console().setVisible(true);
 
         server = new Server();
         server.start();

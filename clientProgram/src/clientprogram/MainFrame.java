@@ -5,6 +5,8 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -50,7 +52,16 @@ public class MainFrame extends javax.swing.JFrame {
 
         username = dial.userName;
 
-        InetAddress adresse = client.discoverHost(udp, 1000);
+        List<InetAddress> listAdresse;
+        listAdresse = client.discoverHosts(udp, 1000);
+        
+        /**
+         * comprendre pourquoi quand on utilise la fonction client.discoverHosts
+         * on obtient aucune adresse liée à la carte réseau connectée au WIFI
+         */
+        for(InetAddress adr:listAdresse){
+            System.out.println(adr.getHostAddress());
+        }
 
         try {
             client.connect(1000, dial.adressIP, tcp, udp);
